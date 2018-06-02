@@ -23,6 +23,8 @@ reinstated.
 //CONSTANTS
 #define SEPARATOR '.'
 #define MAX 5
+#define ENCODE 1
+#define DECODE 0
 
 //HELP MESSAGES
 
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
       processMode = atoi(argv[1]);	//Argument one to int
 
       switch (processMode) {
-	case 1:		//Encode
+	case ENCODE:		//Encode
 	  okFile = openFile(&fileSource, argv[2], "rb");	//read only
 	  okFile2 = openFile(&fileDestination, argv[3], "w");	//create destination file   
 	  if(okFile == 1 && okFile2 == 1) {
@@ -78,7 +80,7 @@ int main(int argc, char *argv[]) {
 	    fprintf(stderr, ERR_MSG1_EN);
 	  }
 	  break;
-	case 0:		//Decode
+	case DECODE:		//Decode
 	  okFile = openFile(&fileSource, argv[2], "r");	//read only
 	  okFile2 = openFile(&fileDestination, argv[3], "wb");	//create destination file   
 	  if(okFile == 1 && okFile2 == 1) {
@@ -137,8 +139,9 @@ int openFile(FILE ** fileHandler, char *fileName, char *mode) {
 long encodeFile(FILE * fileHandler, FILE * fileHandler2) {
   long    byteCount = 0;
   char    ch;
+
   //Read char by char
-  if(fileHandler != NULL) {
+  if(fileHandler != NULL && fileHandler2 != NULL) {
     rewind(fileHandler);	//Go to start of file
     fread(&ch, sizeof(ch), 1, fileHandler);	// Peek into file
     while(!feof(fileHandler)) {
@@ -156,7 +159,7 @@ long decodeFile(FILE * fileHandler, FILE * fileHandler2) {
   char    dataString[MAX];
 
   //Read char by char
-  if(fileHandler != NULL) {
+  if(fileHandler != NULL && fileHandler2 != NULL) {
     rewind(fileHandler);	//Go to start of file
     ch = getc(fileHandler);	//peek into file
     while(!feof(fileHandler)) {
