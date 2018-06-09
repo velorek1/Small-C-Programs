@@ -15,10 +15,19 @@ reinstated.
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __linux__
 //ANSI CODES
-#define AYEL "\x1b[1;33m"	//Yellow
-#define AWHT "\x1b[1;37m"	//White
-#define ARST "\x1b[0m"		//Reset
+# define AYEL "\x1b[1;33m"	//Yellow
+# define AWHT "\x1b[1;37m"	//White
+# define ARST "\x1b[0m"		//Reset
+
+#elif _WIN32
+# define AYEL ""
+# define AWHT ""
+# define ARST ""
+#else
+
+#endif
 
 //CONSTANTS
 #define SEPARATOR '.'
