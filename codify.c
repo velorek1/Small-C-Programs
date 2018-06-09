@@ -45,6 +45,9 @@ AYEL "DECODE:" ARST " codify " AYEL "0" ARST" [input_file] [output_file]\n"
 #define displayHelp() printf(HELPMSG);
 
 /* FUNCTION DECLARATIONS */
+
+void    processOptions(int processMode, char *sourceFileStr,
+		       char *destinationFileStr);
 long    fileSize(FILE * fileHandler);
 int     openFile(FILE ** fileHandler, char *fileName, char *mode);
 int     closeFile(FILE * fileHandler);
@@ -52,9 +55,7 @@ long    encodeFile(FILE * fileHandler, FILE * fileHandler2);
 long    decodeFile(FILE * fileHandler, FILE * fileHandler2);
 
 int main(int argc, char *argv[]) {
-  FILE   *fileSource, *fileDestination;
-  long    newFileSize;
-  int     okFile, okFile2, processMode;
+  int     processMode;
 
   if(argc == 4) {
     //Number of arguments is ok!
@@ -63,50 +64,57 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, ERR_MSG2_EN);
     } else {
       //Open files? Encode or Decode?
-      processMode = atoi(argv[1]);	//Argument one to int
-
-      switch (processMode) {
-	case ENCODE:		//Encode
-	  okFile = openFile(&fileSource, argv[2], "rb");	//read only
-	  okFile2 = openFile(&fileDestination, argv[3], "w");	//create destination file   
-	  if(okFile == 1 && okFile2 == 1) {
-	    //Success!
-	    newFileSize = encodeFile(fileSource, fileDestination);
-	    printf(NFO_MSG1_EN, argv[2], fileSize(fileSource), argv[3], newFileSize);	//Info.
-	    closeFile(fileSource);
-	    closeFile(fileDestination);
-	  } else {
-	    //Error opening files.
-	    fprintf(stderr, ERR_MSG1_EN);
-	  }
-	  break;
-	case DECODE:		//Decode
-	  okFile = openFile(&fileSource, argv[2], "r");	//read only
-	  okFile2 = openFile(&fileDestination, argv[3], "wb");	//create destination file   
-	  if(okFile == 1 && okFile2 == 1) {
-	    //Success!
-	    newFileSize = decodeFile(fileSource, fileDestination);
-	    printf(NFO_MSG2_EN, argv[2], fileSize(fileSource), argv[3], newFileSize);	//Info.
-	    closeFile(fileSource);
-	    closeFile(fileDestination);
-	  } else {
-	    //Error opening files.
-	    fprintf(stderr, ERR_MSG1_EN);
-	  }
-	  break;
-	default:		//Incorrect option              
-	  fprintf(stderr, ERR_MSG3_EN);
-	  break;
-      }
+      processMode = atoi(argv[1]);	//Argument one to int: Encode 1 or Decode 0?
+      processOptions(processMode, argv[2], argv[3]);
     }
   } else {
     //Error in no. of arguments. Display help and exit.
     displayHelp();
   }
-
   return 0;
 }
 
+void processOptions(int processMode, char *sourceFileStr,
+		    char *destinationFileStr) {
+  long    newFileSize;
+  int     okFile, okFile2;
+  FILE   *fileSource, *fileDestination;
+
+  switch (processMode) {
+    case ENCODE:		//Encode
+      okFile = openFile(&fileSource, sourceFileStr, "rb");	//read only
+      okFile2 = openFile(&fileDestination, destinationFileStr, "w");	//create destination file   
+      if(okFile == 1 && okFile2 == 1) {
+	//Success!
+	newFileSize = encodeFile(fileSource, fileDestination);
+	printf(NFO_MSG1_EN, sourceFileStr, fileSize(fileSource), destinationFileStr, newFileSize);	//Info.
+	closeFile(fileSource);
+	closeFile(fileDestination);
+      } else {
+	//Error opening files.
+	fprintf(stderr, ERR_MSG1_EN);
+      }
+      break;
+    case DECODE:		//Decode
+      okFile = openFile(&fileSource, sourceFileStr, "r");	//read only
+      okFile2 = openFile(&fileDestination, destinationFileStr, "wb");	//create destination file   
+      if(okFile == 1 && okFile2 == 1) {
+	//Success!
+	newFileSize = decodeFile(fileSource, fileDestination);
+	printf(NFO_MSG2_EN, sourceFileStr, fileSize(fileSource), destinationFileStr, newFileSize);	//Info.
+	closeFile(fileSource);
+	closeFile(fileDestination);
+      } else {
+	//Error opening files.
+	fprintf(stderr, ERR_MSG1_EN);
+      }
+      break;
+    default:			//Incorrect option              
+      fprintf(stderr, ERR_MSG3_EN);
+      break;
+  }
+  return;
+}
 long fileSize(FILE * fileHandler) {
   long    tempSize;
   //We put the pointer at the end and 
