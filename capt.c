@@ -33,7 +33,7 @@ long    fileSize(FILE * fileHandler);
 int     openFile(FILE ** fileHandler, char *fileName, char *mode);
 int     closeFile(FILE * fileHandler);
 long    writeToFile(FILE * fileHandler,char ch);
-int     writeWindowTitle(FILE * fileHandler);
+void    writeWindowTitle(FILE * fileHandler);
 int     file_exists(FILE **fileHandler, char *fileStr);
 int     kbhit(char *ch);
 
@@ -172,7 +172,7 @@ if (*fileHandler != NULL){
 return ok;
 }
 
-int writeWindowTitle(FILE * fileHandler)
+void writeWindowTitle(FILE * fileHandler)
 {
   HWND hwndDlg;
   char newWindowTitle[256];
